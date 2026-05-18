@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JewelPro Admin Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>JEWELPRO</h2>
+                <span>Management Suite</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" onclick="switchSection('dashboard')">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a href="#pos" class="nav-item" onclick="switchSection('pos')">
+                    <span class="nav-icon">🖥️</span> Point of Sale (POS)
+                </a>
+                <a href="#inventory" class="nav-item" onclick="switchSection('inventory')">
+                    <span class="nav-icon">📦</span> Inventory
+                </a>
+                <a href="#ledger" class="nav-item" onclick="switchSection('ledger')">
+                    <span class="nav-icon">📒</span> Accounting Ledger
+                </a>
+                <a href="#gst" class="nav-item" onclick="switchSection('gst')">
+                    <span class="nav-icon">💼</span> GST Module
+                </a>
+                <a href="#crm" class="nav-item" onclick="switchSection('crm')">
+                    <span class="nav-icon">👥</span> Customer CRM
+                </a>
+                <a href="#gold-scheme" class="nav-item" onclick="switchSection('gold-scheme')">
+                    <span class="nav-icon">🪙</span> Gold Scheme
+                </a>
+                <a href="#repairs" class="nav-item" onclick="switchSection('repairs')">
+                    <span class="nav-icon">🔧</span> Repair Jobs
+                </a>
+                <a href="#reports" class="nav-item" onclick="switchSection('reports')">
+                    <span class="nav-icon">📈</span> Analytics
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>AUREA × JEWELPRO</p>
+                <small>v1.2 (May 2026)</small>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top bar -->
+            <header class="topbar">
+                <div class="topbar-title" id="pageTitle">Dashboard</div>
+                <div class="topbar-actions">
+                    <span id="adminLiveGoldDisplay" class="gold-rate-bubble">Loading...</span>
+                    <button class="btn btn-secondary btn-sm" onclick="openDatabaseSettings()">⚙️ DB Config</button>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="section-dashboard" class="admin-section active">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-info">
+                            <span class="kpi-label">Today's Sales</span>
+                            <span class="kpi-value" id="kpi-sales">₹1,84,200</span>
+                        </div>
+                        <div class="kpi-icon">💰</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-info">
+                            <span class="kpi-label">Items in Stock</span>
+                            <span class="kpi-value" id="kpi-stock">2,847</span>
+                        </div>
+                        <div class="kpi-icon">💎</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-info">
+                            <span class="kpi-label">Active Customers</span>
+                            <span class="kpi-value" id="kpi-customers">1,243</span>
+                        </div>
+                        <div class="kpi-icon">👥</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-info">
+                            <span class="kpi-label">Pending Repairs</span>
+                            <span class="kpi-value" id="kpi-repairs">4</span>
+                        </div>
+                        <div class="kpi-icon">🔧</div>
+                    </div>
+                </div>
+
+                <div class="chart-layout">
+                    <div class="chart-container">
+                        <h3>8-Month Revenue Trend</h3>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <div class="chart-container donut">
+                        <h3>Sales by Category</h3>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="dashboard-tables">
+                    <div class="panel">
+                        <h3>Recent Transactions</h3>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>INV No</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTransactionsTable">
+                                <!-- JS Injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="panel">
+                        <h3>Inventory Snapshot</h3>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Name</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventorySnapshotTable">
+                                <!-- JS Injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- POS Section -->
+            <section id="section-pos" class="admin-section">
+                <div class="pos-layout">
+                    <div class="pos-billing panel">
+                        <h3>Invoice Billing</h3>
+                        <div class="pos-search-box">
+                            <input type="text" id="posSearch" placeholder="Search product by SKU or Name..." oninput="searchPOSProducts()">
+                            <div class="search-results-dropdown" id="searchResults"></div>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Item</th>
+                                    <th>Weight (g)</th>
+                                    <th>Making (₹/g)</th>
+                                    <th>Price (₹)</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="posBillTable">
+                                <!-- Injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="pos-summary panel">
+                        <h3>Transaction Details</h3>
+                        <div class="customer-select-box">
+                            <input type="text" id="posCustomerPhone" placeholder="Customer Phone No" onchange="autoFetchCustomerCRM()">
+                            <input type="text" id="posCustomerName" placeholder="Customer Name">
+                        </div>
+                        <div class="summary-breakdown">
+                            <div class="summary-item">
+                                <span>Subtotal</span>
+                                <span id="posSubtotal">₹0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>Making Charges</span>
+                                <span id="posMaking">₹0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>GST (3%)</span>
+                                <span id="posGST">₹0</span>
+                            </div>
+                            <div class="summary-item discount">
+                                <span>Discount</span>
+                                <input type="number" id="posDiscount" value="0" oninput="calculatePOSBill()">
+                            </div>
+                            <hr>
+                            <div class="summary-item grand-total">
+                                <span>Grand Total</span>
+                                <span id="posGrandTotal">₹0</span>
+                            </div>
+                        </div>
+
+                        <div class="loyalty-burn-section" id="loyaltySection">
+                            <!-- Injected if customer found -->
+                        </div>
+
+                        <div class="payment-method-selector">
+                            <label>Payment Method:</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="paymentMethod" value="Cash" checked> Cash</label>
+                                <label><input type="radio" name="paymentMethod" value="UPI"> UPI</label>
+                                <label><input type="radio" name="paymentMethod" value="Card"> Card</label>
+                                <label><input type="radio" name="paymentMethod" value="EMI"> EMI</label>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-block" onclick="completePOSSale()">Complete Sale</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Inventory Section -->
+            <section id="section-inventory" class="admin-section">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Product Database</h3>
+                        <button class="btn btn-primary" onclick="openNewProductModal()">+ Add New Product</button>
+                    </div>
+                    <div class="inventory-filters">
+                        <input type="text" id="inventorySearch" placeholder="Search SKU or Name..." oninput="renderInventory()">
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Name</th>
+                                <th>Metal</th>
+                                <th>Purity</th>
+                                <th>Weight (g)</th>
+                                <th>Making (₹/g)</th>
+                                <th>Stock</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Accounting Ledger Section -->
+            <section id="section-ledger" class="admin-section">
+                <div class="ledger-layout">
+                    <div class="panel ledger-form-panel">
+                        <h3>Add Manual Transaction</h3>
+                        <form id="ledgerForm">
+                            <div class="form-group">
+                                <label>Description</label>
+                                <input type="text" id="ledgerDesc" required>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Credit (Inflow)</label>
+                                    <input type="number" id="ledgerCredit" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Debit (Outflow)</label>
+                                    <input type="number" id="ledgerDebit" value="0">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Post Entry</button>
+                        </form>
+                    </div>
+                    <div class="panel ledger-table-panel">
+                        <h3>General Ledger</h3>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Credit (₹)</th>
+                                    <th>Debit (₹)</th>
+                                    <th>Balance (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledgerTableBody">
+                                <!-- Injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- GST Module Section -->
+            <section id="section-gst" class="admin-section">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-info">
+                            <span class="kpi-label">GST Collected (MTD)</span>
+                            <span class="kpi-value" id="gstCollected">₹0</span>
+                        </div>
+                        <div class="kpi-icon">📈</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-info">
+                            <span class="kpi-label">Input Tax Credit (ITC)</span>
+                            <span class="kpi-value" id="gstITC">₹0</span>
+                        </div>
+                        <div class="kpi-icon">📉</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-info">
+                            <span class="kpi-label">Net GST Payable</span>
+                            <span class="kpi-value" id="gstNet">₹0</span>
+                        </div>
+                        <div class="kpi-icon">💼</div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h3>GSTR-1 Summary Report (HSN: 7113)</h3>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction Date</th>
+                                <th>Invoice No</th>
+                                <th>Assessable Value (₹)</th>
+                                <th>GST Rate (%)</th>
+                                <th>CGST (1.5%)</th>
+                                <th>SGST (1.5%)</th>
+                                <th>Total GST (3%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gstReportTable">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- CRM Section -->
+            <section id="section-crm" class="admin-section">
+                <div class="crm-layout">
+                    <div class="panel customer-list-panel">
+                        <h3>Customer Base</h3>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Loyalty Points</th>
+                                    <th>Savings Scheme</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crmCustomerTable">
+                                <!-- Injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="panel customer-details-panel" id="customerProfilePanel">
+                        <h3>Profile & Purchase History</h3>
+                        <p class="select-hint">Select a customer from the left to view history</p>
+                        <div id="customerProfileDetails" style="display: none;">
+                            <!-- Injected -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gold Scheme Section -->
+            <section id="section-gold-scheme" class="admin-section">
+                <div class="gold-scheme-layout">
+                    <div class="panel">
+                        <h3>Enrol Customer in Scheme</h3>
+                        <form id="goldSchemeForm">
+                            <div class="form-group">
+                                <label>Select Customer Phone</label>
+                                <input type="text" id="schemePhone" placeholder="Search Customer..." required>
+                            </div>
+                            <div class="form-group">
+                                <label>Monthly Amount (₹)</label>
+                                <input type="number" id="schemeAmount" value="1000" min="500" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Enrol Customer</button>
+                        </form>
+                    </div>
+                    <div class="panel">
+                        <h3>Active Gold Scheme Subscriptions</h3>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Monthly (₹)</th>
+                                    <th>Months Paid</th>
+                                    <th>Balance (₹)</th>
+                                    <th>Add Installment</th>
+                                </tr>
+                            </thead>
+                            <tbody id="goldSchemeSubscriptions">
+                                <!-- Injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Repair Jobs Section -->
+            <section id="section-repairs" class="admin-section">
+                <div class="repairs-layout">
+                    <div class="panel">
+                        <h3>Create New Repair Job</h3>
+                        <form id="repairForm">
+                            <div class="form-group">
+                                <label>Customer Name</label>
+                                <input type="text" id="repairCustomerName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Item Description</label>
+                                <input type="text" id="repairDesc" placeholder="e.g. 22K Gold Ring (Resize)" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Problem Description</label>
+                                <input type="text" id="repairIssue" placeholder="e.g. Resize from size 6 to 7" required>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Est Cost (₹)</label>
+                                    <input type="number" id="repairCost" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Promised Date</label>
+                                    <input type="date" id="repairDate" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Log Repair Job</button>
+                        </form>
+                    </div>
+                    <div class="panel">
+                        <h3>Repair Job Board</h3>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Job ID</th>
+                                    <th>Customer</th>
+                                    <th>Description</th>
+                                    <th>Est Cost (₹)</th>
+                                    <th>Promised Date</th>
+                                    <th>Status</th>
+                                    <th>Notify</th>
+                                </tr>
+                            </thead>
+                            <tbody id="repairJobsTable">
+                                <!-- Injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics Reports Section -->
+            <section id="section-reports" class="admin-section">
+                <div class="panel">
+                    <h3>Business Health Report</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <h4>MTD Best-Seller</h4>
+                            <p id="bestSellerMetric">Loading...</p>
+                        </div>
+                        <div class="metric-card">
+                            <h4>New vs Returning Customers</h4>
+                            <p id="customerMetric">Loading...</p>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Gold Scheme Collections</h4>
+                            <p id="goldSchemeCollections">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Database Settings Modal -->
+    <div class="modal" id="dbSettingsModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeDatabaseSettings()">&times;</span>
+            <h3>Supabase Configuration</h3>
+            <p>Connect your local dashboard directly to a real Supabase database.</p>
+            <div class="form-group">
+                <label>Supabase URL</label>
+                <input type="text" id="dbUrl" placeholder="https://yourproject.supabase.co">
+            </div>
+            <div class="form-group">
+                <label>Supabase Service Role Key (API Key)</label>
+                <input type="password" id="dbKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+            </div>
+            <button class="btn btn-primary btn-block" onclick="saveDatabaseConfig()">Save Configuration</button>
+        </div>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeProductModal()">&times;</span>
+            <h3 id="productModalTitle">Add New Product</h3>
+            <form id="productForm">
+                <input type="hidden" id="prodId">
+                <div class="form-group">
+                    <label>SKU</label>
+                    <input type="text" id="prodSku" placeholder="JW-XXXX" required>
+                </div>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="prodName" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="prodCategory">
+                            <option value="Ring">Ring</option>
+                            <option value="Necklace">Necklace</option>
+                            <option value="Earring">Earring</option>
+                            <option value="Bangle">Bangle</option>
+                            <option value="Anklet">Anklet</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Metal</label>
+                        <select id="prodMetal">
+                            <option value="Gold">Gold</option>
+                            <option value="Silver">Silver</option>
+                            <option value="Platinum">Platinum</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Purity</label>
+                        <input type="text" id="prodPurity" placeholder="e.g. 22K, 925, 950" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Weight (g)</label>
+                        <input type="number" step="0.01" id="prodWeight" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Making Charges (₹/g)</label>
+                        <input type="number" id="prodMaking" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock Count</label>
+                        <input type="number" id="prodStock" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="text" id="prodImageUrl" placeholder="https://...">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Save Product</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- GST Printable Invoice Modal -->
+    <div class="modal" id="invoiceModal">
+        <div class="modal-content" style="max-width: 650px; background: #fff; color: #000; padding: 2rem; font-family: 'Inter', sans-serif;">
+            <span class="close-modal" onclick="closeInvoiceModal()" style="color: #000; top: 10px; right: 15px;">&times;</span>
+            <div id="printArea">
+                <div style="text-align: center; border-bottom: 2px solid #d4af37; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                    <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; margin: 0; color: #aa7c11; letter-spacing: 0.05em;">AUREA</h2>
+                    <p style="margin: 0.2rem 0; font-size: 0.85rem; color: #555;">Fine Handcrafted Jewellery & Ornaments</p>
+                    <p style="margin: 0; font-size: 0.85rem; font-weight: 600;">GSTIN: 32XXXXX1234X1Z5 | HSN Code: 7113</p>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <div>
+                        <strong>Billed To:</strong>
+                        <div id="invCustName">Priya M.</div>
+                        <div id="invCustPhone">Ph: 9845012345</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <strong>Invoice Number:</strong>
+                        <div id="invNumber" style="font-weight: 600; color: #aa7c11;">INV-0001</div>
+                        <strong>Date:</strong>
+                        <div id="invDate">18-May-2026</div>
+                    </div>
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #ddd; background: #f9f9f9;">
+                            <th style="padding: 0.6rem; text-align: left; color: #000;">SKU & Description</th>
+                            <th style="padding: 0.6rem; text-align: right; color: #000;">Qty</th>
+                            <th style="padding: 0.6rem; text-align: right; color: #000;">Unit Price (₹)</th>
+                            <th style="padding: 0.6rem; text-align: right; color: #000;">Total (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invItemsBody">
+                        <!-- Injected -->
+                    </tbody>
+                </table>
+                <div style="border-top: 1px solid #ddd; padding-top: 1rem; display: flex; justify-content: flex-end; font-size: 0.9rem; line-height: 1.5;">
+                    <div style="width: 250px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Subtotal:</span>
+                            <strong id="invSubtotal">₹0</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Making Charges:</span>
+                            <strong id="invMaking">₹0</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>CGST (1.5%):</span>
+                            <strong id="invCGST">₹0</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>SGST (1.5%):</span>
+                            <strong id="invSGST">₹0</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-top: 2px solid #d4af37; padding-top: 0.4rem; margin-top: 0.4rem; font-size: 1.1rem; color: #aa7c11;">
+                            <span>Grand Total:</span>
+                            <strong id="invGrandTotal">₹0</strong>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 2rem; font-size: 0.75rem; color: #666; text-align: center; border-top: 1px solid #eee; padding-top: 1rem;">
+                    Thank you for shopping at Aurea Fine Jewellery! This is a computer-generated GST-compliant invoice.
+                </div>
+            </div>
+            <button class="btn btn-primary btn-block" style="margin-top: 1.5rem;" onclick="window.print()">Print Invoice</button>
+        </div>
+    </div>
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
