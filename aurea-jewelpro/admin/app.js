@@ -7,9 +7,9 @@ const CONFIG = {
     liveGoldRate: 7200, // standard base gold rate (22K) per gram
 };
 
-let supabase = null;
+let supabaseClient = null;
 if (CONFIG.supabaseUrl && CONFIG.supabaseKey) {
-    supabase = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+    supabaseClient = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
 }
 
 // Unified Database System (Directly reads/writes same localStorage items as website)

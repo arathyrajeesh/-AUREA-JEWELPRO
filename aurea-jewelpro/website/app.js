@@ -9,16 +9,16 @@ const CONFIG = {
 };
 
 // Initialize Supabase Client if credentials exist
-let supabase = null;
+let supabaseClient = null;
 if (CONFIG.supabaseUrl && CONFIG.supabaseKey) {
-    supabase = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+    supabaseClient = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
 }
 
 // Database Helper Module (Works with Supabase or localStorage fallback)
 const DB = {
     async getProducts() {
-        if (supabase) {
-            const { data, error } = await supabase.from('products').select('*');
+        if (supabaseClient) {
+            const { data, error } = await supabaseClient.from('products').select('*');
             if (!error) return data;
         }
         // Fallback/Mock initial data
@@ -38,8 +38,8 @@ const DB = {
     },
 
     async saveTransaction(transaction) {
-        if (supabase) {
-            const { data, error } = await supabase.from('transactions').insert([transaction]);
+        if (supabaseClient) {
+            const { data, error } = await supabaseClient.from('transactions').insert([transaction]);
             if (!error) return data;
         }
         // Local Fallback
@@ -79,7 +79,7 @@ const DB = {
             }
         });
         localStorage.setItem('aurea_products', JSON.stringify(products));
-        if (supabase) {
+        if (supabaseClient) {
             // In a real Supabase setup, you'd perform a batch update or decrement trigger.
         }
     },
@@ -90,8 +90,8 @@ const DB = {
         entry.balance = prevBalance + entry.credit - entry.debit;
         ledger.push(entry);
         localStorage.setItem('aurea_ledger', JSON.stringify(ledger));
-        if (supabase) {
-            await supabase.from('ledger').insert([entry]);
+        if (supabaseClient) {
+            await supabaseClient.from('ledger').insert([entry]);
         }
     },
 
@@ -106,14 +106,14 @@ const DB = {
             customers.push(customer);
         }
         localStorage.setItem('aurea_customers', JSON.stringify(customers));
-        if (supabase) {
-            await supabase.from('customers').upsert([customer]);
+        if (supabaseClient) {
+            await supabaseClient.from('customers').upsert([customer]);
         }
     },
 
     async subscribeNewsletter(email) {
-        if (supabase) {
-            await supabase.from('subscribers').insert([{ email }]);
+        if (supabaseClient) {
+            await supabaseClient.from('subscribers').insert([{ email }]);
         }
         let subs = JSON.parse(localStorage.getItem('aurea_subscribers')) || [];
         if (!subs.includes(email)) {
